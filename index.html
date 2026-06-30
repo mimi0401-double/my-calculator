@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>消費理財計算機：現金 vs 分期付款</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --success-color: #16a34a;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin: 0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .unit {
+            position: absolute;
+            right: 12px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+
+        input {
+            padding-right: 40px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .result-item:last-of-type {
+            border-bottom: none;
+        }
+
+        .result-val {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .suggestion-box {
+            margin-top: 20px;
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .suggestion-title {
+            font-weight: bold;
+            color: var(--success-color);
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+        }
+
+        .suggestion-desc {
+            font-size: 0.95rem;
+            color: #166534;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>分期付款划算嗎？</h1>
+        <p class="subtitle">輸入消費條件與投資報酬率，動態計算最佳支付方案</p>
+    </header>
+
+    <div class="grid">
+        <div class="card">
+            <div class="card-title">輸入參數設定 (不支援負數)</div>
+            
+            <div class="form-group">
+                <label for="price">產品原價 (P)</label>
+                <div class="input-wrapper">
+                    <input type="number" id="price" value="14000" min="0">
+                    <span class="unit">元</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="period">分期期數 (N)</label>
+                <div class="input-wrapper">
+                    <input type="number" id="period" value="12" min="1">
+                    <span class="unit">期</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="roi">年化報酬率 (R)</label>
+                <div class="input-wrapper">
+                    <input type="number" id="roi" value="10" step="0.1" min="0">
+                    <span class="unit">%</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="cashDiscount">現金折扣率 (D)</label>
+                <div class="input-wrapper">
+                    <input type="number" id="cashDiscount" value="0" step="0.1" min="0">
+                    <span class="unit">%</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="singleReward">單筆回饋率 (C)</label>
+                <div class="input-wrapper">
+                    <input type="number" id="singleReward" value="6" step="0.1" min="0">
+                    <span class="unit">%</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="installReward">分期回饋率</label>
+                <div class="input-wrapper">
+                    <input type="number" id="installReward" value="4" step="0.1" min="0">
+                    <span class="unit">%</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="installInterest">分期年利率</label>
+                <div class="input-wrapper">
+                    <input type="number" id="installInterest" value="0" step="0.1" min="0">
+                    <span class="unit">%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div class="card-title">實質成本與比較</div>
+                
+                <div class="result-item">
+                    <span>方案 A：現金實質成本</span>
+                    <span class="result-val" id="costA">0 元</span>
+                </div>
+                
+                <div class="result-item">
+                    <span>方案 B：分期實質成本</span>
+                    <span class="result-val" id="costB">0 元</span>
+                </div>
+
+                <div class="result-item">
+                    <span>每月應付額</span>
+                    <span class="result-val" id="monthlyPay">0 元</span>
+                </div>
+                
+                <div class="result-item">
+                    <span>分期獲利等效折扣率</span>
+                    <span class="result-val" id="equivalentDiscount">0%</span>
+                </div>
+                
+                <div class="result-item">
+                    <span>方案差額 (A 減 B)</span>
+                    <span class="result-val" id="diffAB">0 元</span>
+                </div>
+            </div>
+
+            <div class="suggestion-box" id="suggestionBox">
+                <div class="suggestion-title" id="suggestTitle">💡 評估中</div>
+                <div class="suggestion-desc" id="suggestDesc">請檢查輸入數據是否正確。</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 獲取所有輸入欄位元素
+    const inputs = ['price', 'period', 'roi', 'cashDiscount', 'singleReward', 'installReward', 'installInterest']
+        .reduce((acc, id) => ({ ...acc, [id]: document.getElementById(id) }), {});
+
+    // 獲取所有輸出顯示元素
+    const outputs = ['costA', 'costB', 'monthlyPay', 'equivalentDiscount', 'diffAB', 'suggestTitle', 'suggestDesc', 'suggestionBox']
+        .reduce((acc, id) => ({ ...acc, [id]: document.getElementById(id) }), {});
+
+    function calculate() {
+        // 讀取數值、強制轉正數防呆、轉換為機率
+        const P = Math.max(0, parseFloat(inputs.price.value) || 0);
+        const N = Math.max(1, parseInt(inputs.period.value) || 1); // 期數至少為1
+        const R = Math.max(0, parseFloat(inputs.roi.value) || 0) / 100;
+        const D = Math.max(0, parseFloat(inputs.cashDiscount.value) || 0) / 100;
+        const C = Math.max(0, parseFloat(inputs.singleReward.value) || 0) / 100;
+        const installRewardRate = Math.max(0, parseFloat(inputs.installReward.value) || 0) / 100;
+        const installInterestRate = Math.max(0, parseFloat(inputs.installInterest.value) || 0) / 100;
+
+        // 當使用者輸入負數時，即時將欄位值校正回安全數值
+        if (parseFloat(inputs.price.value) < 0) inputs.price.value = P;
+        if (parseInt(inputs.period.value) < 1) inputs.period.value = N;
+        if (parseFloat(inputs.roi.value) < 0) inputs.roi.value = R * 100;
+        if (parseFloat(inputs.cashDiscount.value) < 0) inputs.cashDiscount.value = D * 100;
+        if (parseFloat(inputs.singleReward.value) < 0) inputs.singleReward.value = C * 100;
+        if (parseFloat(inputs.installReward.value) < 0) inputs.installReward.value = installRewardRate * 100;
+        if (parseFloat(inputs.installInterest.value) < 0) inputs.installInterest.value = installInterestRate * 100;
+
+        // 1. 方案 A：現金實質成本
+        const cashDiscountAmount = P * D;
+        const cashRewardAmount = P * (1 - D) * C;
+        const costA = P * (1 - D) - cashRewardAmount;
+
+        // 2. 方案 B：分期實質成本計算
+        let monthlyPayment = P / N;
+        if (installInterestRate > 0) {
+            const monthlyRate = installInterestRate / 12;
+            monthlyPayment = (P * monthlyRate * Math.pow(1 + monthlyRate, N)) / (Math.pow(1 + monthlyRate, N) - 1);
+        }
+
+        // 計算分期留存資金的投資套利獲利
+        let totalInterestEarned = 0;
+        let remainingBalance = P;
+        const monthlyRoi = R / 12;
+
+        for (let i = 0; i < N; i++) {
+            totalInterestEarned += remainingBalance * monthlyRoi;
+            remainingBalance -= monthlyPayment;
+        }
+
+        const installRewardAmount = P * installRewardRate;
+        const totalInstallPay = monthlyPayment * N;
+        const costB = totalInstallPay - totalInterestEarned - installRewardAmount;
+
+        // 3. 差額與等效折扣
+        const diff = costA - costB;
+        const eqDiscount = P > 0 ? (totalInterestEarned + installRewardAmount) / P : 0;
+
+        // 4. 更新畫面顯示
+        outputs.costA.textContent = `${Math.round(costA).toLocaleString()} 元`;
+        outputs.costB.textContent = `${Math.round(costB).toLocaleString()} 元`;
+        outputs.monthlyPay.textContent = `${Math.round(monthlyPayment).toLocaleString()} 元`;
+        outputs.equivalentDiscount.textContent = `${(eqDiscount * 100).toFixed(2)}%`;
+        outputs.diffAB.textContent = `${Math.round(diff).toLocaleString()} 元`;
+
+        // 5. 動態產生最終建議
+        if (P === 0) {
+            outputs.suggestTitle.textContent = "💡 請輸入產品原價";
+            outputs.suggestDesc.textContent = "請輸入大於 0 的原價以開始試算方案。";
+            outputs.suggestionBox.style.backgroundColor = "#f8fafc";
+            outputs.suggestionBox.style.borderColor = "#e2e8f0";
+            outputs.suggestTitle.style.color = "#64748b";
+            outputs.suggestDesc.style.color = "#334155";
+        } else if (diff > 0) {
+            outputs.suggestTitle.textContent = "✅ 建議分期付款 (成本最低)";
+            outputs.suggestDesc.textContent = `分期付款比現金支付省下了將近 ${Math.round(diff).toLocaleString()} 元的實質成本。`;
+            outputs.suggestionBox.style.backgroundColor = "#f0fdf4";
+            outputs.suggestionBox.style.borderColor = "#bbf7d0";
+            outputs.suggestTitle.style.color = "#16a34a";
+            outputs.suggestDesc.style.color = "#166534";
+        } else if (diff < 0) {
+            outputs.suggestTitle.textContent = "💵 建議現金支付 (成本最低)";
+            outputs.suggestDesc.textContent = `現金支付比分期付款省下了將近 ${Math.round(Math.abs(diff)).toLocaleString()} 元的實質成本。`;
+            outputs.suggestionBox.style.backgroundColor = "#eff6ff";
+            outputs.suggestionBox.style.borderColor = "#bfdbfe";
+            outputs.suggestTitle.style.color = "#2563eb";
+            outputs.suggestDesc.style.color = "#1e40af";
+        } else {
+            outputs.suggestTitle.textContent = "⚖️ 兩者成本相同";
+            outputs.suggestDesc.textContent = "兩種方案的實質成本完全一樣，您可以依當下現金流彈性決定。";
+            outputs.suggestionBox.style.backgroundColor = "#f8fafc";
+            outputs.suggestionBox.style.borderColor = "#e2e8f0";
+            outputs.suggestTitle.style.color = "#64748b";
+            outputs.suggestDesc.style.color = "#334155";
+        }
+    }
+
+    // 綁定動態輸入監聽事件
+    Object.values(inputs).forEach(input => {
+        input.addEventListener('input', calculate);
+    });
+
+    // 首次載入頁面時先執行一次計算
+    calculate();
+</script>
+
+</body>
+</html>
